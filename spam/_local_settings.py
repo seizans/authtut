@@ -1,6 +1,9 @@
 EMAIL_HOST_USER = 'YOUR EMAIL ADDRESS'
 EMAIL_HOST_PASSWORD = 'YOUR EMAIL PASSWORD'
 
+FACEBOOK_ID = 'FACEBOOK APP ID'
+FACEBOOK_SECRET = 'FACEBOOK SECRET'
+
 # For django-debug-toolbar
 LOCAL_MIDDLEWARE_CLASSES = ('debug_toolbar.middleware.DebugToolbarMiddleware',)
 LOCAL_INSTALLED_APPS = ('debug_toolbar',)
