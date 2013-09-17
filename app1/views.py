@@ -4,9 +4,12 @@ from django.http import HttpResponseRedirect
 
 from spam.settings import FACEBOOK_ID, FACEBOOK_SECRET
 
+FACEBOOK_AUTHORIZE_URL = 'https://www.facebook.com/dialog/oauth'
+FACEBOOK_ACCESS_TOKEN_URL = 'https://graph.facebook.com/oauth/access_token'
+FACEBOOK_EXPIRES_IN_KEY = 'expires'
+
 
 class HelloView(TemplateView):
-    print FACEBOOK_ID
     template_name = 'app1/hello.html'
 
 
@@ -16,13 +19,14 @@ def loginview(request):
         request.build_absolute_uri('/app1/facebook/callback'),
         '',
     )
-    print redirect_url
     return HttpResponseRedirect(redirect_url)
 
 
-FACEBOOK_AUTHORIZE_URL = 'https://www.facebook.com/dialog/oauth'
-FACEBOOK_ACCESS_TOKEN_URL = 'https://graph.facebook.com/oauth/access_token'
-FACEBOOK_EXPIRES_IN_KEY = 'expires'
+def callbackview(request):
+    access_token = get_access_token(
+        FACEBOOK_ID, request.build_absolute_uri('/app1/facebook/callback'),
+        FACEBOOK_SECRET,  '', request.GET['code'])
+    return facepost(access_token['access_token'])
 
 
 def facepost(token):
@@ -32,15 +36,6 @@ def facepost(token):
     link = 'http://docs.python.jp/2/library/index.html'
     graph.put_object('me', 'feed', message=message, link=link)
     return render_to_response('/app1/hello')
-
-
-def callbackview(request):
-    print 'CODE: ', request.GET['code']
-    access_token = get_access_token(
-        FACEBOOK_ID, request.build_absolute_uri('/app1/facebook/callback'),
-        FACEBOOK_SECRET,  '', request.GET['code'])
-    print access_token
-    return facepost(access_token['access_token'])
 
 
 try:
