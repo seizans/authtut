@@ -1,9 +1,6 @@
 from django.views.generic import TemplateView
-from django.shortcuts import redirect, render_to_response
+from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect
-
-#from requests_oauthlib import OAuth2Session
-#from requests_oauthlib.compliance_fixes.facebook import facebook_compliance_fix
 
 from spam.settings import FACEBOOK_ID, FACEBOOK_SECRET
 
@@ -14,11 +11,11 @@ class HelloView(TemplateView):
 
 
 def loginview(request):
-    fb = OAuth2Client(request, FACEBOOK_ID, FACEBOOK_SECRET,
-                      FACEBOOK_ACCESS_TOKEN_URL,
-                      request.build_absolute_uri('/app1/facebook/callback'),
-                      '')
-    redirect_url = fb.get_redirect_url(FACEBOOK_AUTHORIZE_URL, '')
+    redirect_url = get_redirect_url(
+        FACEBOOK_AUTHORIZE_URL, '', FACEBOOK_ID,
+        request.build_absolute_uri('/app1/facebook/callback'),
+        '',
+    )
     print redirect_url
     return HttpResponseRedirect(redirect_url)
 
@@ -38,95 +35,50 @@ def facepost(token):
 
 
 def callbackview(request):
-    fb = OAuth2Client(request, FACEBOOK_ID, FACEBOOK_SECRET,
-                      FACEBOOK_ACCESS_TOKEN_URL,
-                      request.build_absolute_uri('/app1/facebook/callback'),
-                      '')
     print 'CODE: ', request.GET['code']
-    access_token = fb.get_access_token(request.GET['code'])
+    access_token = get_access_token(
+        FACEBOOK_ID, request.build_absolute_uri('/app1/facebook/callback'),
+        FACEBOOK_SECRET,  '', request.GET['code'])
     print access_token
     return facepost(access_token['access_token'])
 
 
 try:
-    from urllib.parse import parse_qsl, urlencode
+    from urllib.parse import parse_qsl, urlencode  # Python3
 except ImportError:
     from urllib import urlencode
     from urlparse import parse_qsl
 import requests
 
 
+def get_redirect_url(authorization_url, extra_params, client_id, redirect_url,
+                     scope):
+    params = {
+        'client_id': client_id,
+        'redirect_uri': redirect_url,
+        'scope': scope,
+        'response_type': 'code'
+    }
+    params.update(extra_params)
+    return '%s?%s' % (authorization_url, urlencode(params))
+
+
+def get_access_token(client_id, redirect_uri, client_secret, scope, code):
+    params = {'client_id': client_id,
+              'redirect_uri': redirect_uri,
+              'grant_type': 'authorization_code',
+              'client_secret': client_secret,
+              'scope': scope,
+              'code': code}
+    url = FACEBOOK_ACCESS_TOKEN_URL
+    resp = requests.post(url, params)
+    if resp.status_code == 200:
+        access_token = dict(parse_qsl(resp.text))
+    if not access_token or 'access_token' not in access_token:
+        raise OAuth2Error('Error retrieving access token: %s'
+                          % resp.content)
+    return access_token
+
+
 class OAuth2Error(Exception):
     pass
-
-
-class OAuth2Client(object):
-
-    def __init__(self, request, consumer_key, consumer_secret,
-                 access_token_url,
-                 callback_url,
-                 scope):
-        self.request = request
-        self.access_token_url = access_token_url
-        self.callback_url = callback_url
-        self.consumer_key = consumer_key
-        self.consumer_secret = consumer_secret
-        self.scope = ' '.join(scope)
-        self.state = None
-
-    def get_redirect_url(self, authorization_url, extra_params):
-        params = {
-            'client_id': self.consumer_key,
-            'redirect_uri': self.callback_url,
-            'scope': self.scope,
-            'response_type': 'code'
-        }
-        if self.state:
-            params['state'] = self.state
-        params.update(extra_params)
-        return '%s?%s' % (authorization_url, urlencode(params))
-
-    def get_access_token(self, code):
-        params = {'client_id': self.consumer_key,
-                  'redirect_uri': self.callback_url,
-                  'grant_type': 'authorization_code',
-                  'client_secret': self.consumer_secret,
-                  'scope': self.scope,
-                  'code': code}
-        url = self.access_token_url
-        # TODO: Proper exception handling
-        resp = requests.post(url, params)
-        access_token = None
-        if resp.status_code == 200:
-            # Weibo sends json via 'text/plain;charset=UTF-8'
-            if (resp.headers['content-type'].split(';')[0] == 'application/json'
-                or resp.text[:2] == '{"'):
-                access_token = resp.json()
-            else:
-                access_token = dict(parse_qsl(resp.text))
-        if not access_token or 'access_token' not in access_token:
-            raise OAuth2Error('Error retrieving access token: %s'
-                              % resp.content)
-        return access_token
-
-
-"""
-def loginview2(request):
-    oauth = OAuth2Session(FACEBOOK_ID,
-                          redirect_uri='http://local-test.com:8000/app1/hello')
-    facebook = facebook_compliance_fix(oauth)
-    #authorization_response, state = facebook.authorization_url(
-        #FACEBOOK_AUTHORIZE_URL)
-    authorization_url, state = facebook.authorization_url(
-        FACEBOOK_AUTHORIZE_URL)
-    print 'Go here and authorize,', authorization_url
-    authorization_response = raw_input('Enter the full callback URL')
-    #import requests
-    #authorization_response = requests.post(authorization_url)
-    token = facebook.fetch_token(
-        FACEBOOK_ACCESS_TOKEN_URL,
-        authorization_response=authorization_response,
-        client_secret=FACEBOOK_SECRET)
-    print 'token = ', token
-    return redirect(HelloView)
-"""
