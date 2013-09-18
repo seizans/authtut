@@ -1,6 +1,7 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render_to_response, redirect
 from django.http import HttpResponseRedirect
+import twitter
 
 from spam.settings import FACEBOOK_ID, FACEBOOK_SECRET
 from spam.settings import TWITTER_ID, TWITTER_SECRET
@@ -109,5 +110,16 @@ def twitter_callback(request):
                          parameters={})
     # TODO: if not client.is_valid():
     access_token = client.get_access_token()
-    print 'TOKEN: ', access_token
+    print 'TOKEN: ', access_token['oauth_token_secret']
+    token = access_token['oauth_token']
+    secret = access_token['oauth_token_secret']
+    api = twitter.Api(
+        consumer_key=TWITTER_ID,
+        consumer_secret=TWITTER_SECRET,
+        access_token_key=token,
+        access_token_secret=secret
+    )
+    message = 'twitter post test'
+    poststatus = api.PostUpdate(message)
+    print 'POST STATUS: ', poststatus
     return redirect('/app1/hello')
