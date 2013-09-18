@@ -71,48 +71,64 @@ class OAuthClient(object):
             get_params['oauth_callback'] \
                 = self.request.build_absolute_uri(self.callback_url)
             rt_url = self.request_token_url + '?' + urlencode(get_params)
-            oauth = OAuth1(self.consumer_key, client_secret=self.consumer_secret)
+            oauth = OAuth1(
+                self.consumer_key, client_secret=self.consumer_secret)
             response = requests.post(url=rt_url, auth=oauth)
             if response.status_code != 200:
                 raise OAuthError(
-                    _('Invalid response while obtaining request token from "%s".') % get_token_prefix(self.request_token_url))
+                    _('Invalid response while obtaining request token '
+                      'from "%s".') % get_token_prefix(self.request_token_url))
             self.request_token = dict(parse_qsl(response.text))
-            self.request.session['oauth_%s_request_token' % get_token_prefix(self.request_token_url)] = self.request_token
+            self.request.session[
+                'oauth_%s_request_token' % get_token_prefix(
+                    self.request_token_url)] = self.request_token
         return self.request_token
 
     def get_access_token(self):
         """
-        Obtain the access token to access private resources at the API endpoint.
+        Obtain the access token to access private resources at the API endpoint
         """
         if self.access_token is None:
             request_token = self._get_rt_from_session()
-            oauth = OAuth1(self.consumer_key,
-                           client_secret=self.consumer_secret,
-                           resource_owner_key=request_token['oauth_token'],
-                           resource_owner_secret=request_token['oauth_token_secret'])
+            oauth = OAuth1(
+                self.consumer_key,
+                client_secret=self.consumer_secret,
+                resource_owner_key=request_token['oauth_token'],
+                resource_owner_secret=request_token['oauth_token_secret']
+            )
             at_url = self.access_token_url
             # Passing along oauth_verifier is required according to:
-            # http://groups.google.com/group/twitter-development-talk/browse_frm/thread/472500cfe9e7cdb9#
+            # http://groups.google.com/group/twitter-development-talk
+            #        /browse_frm/thread/472500cfe9e7cdb9#
             # Though, the custom oauth_callback seems to work without it?
             if 'oauth_verifier' in self.request.REQUEST:
-                at_url = at_url + '?' + urlencode({'oauth_verifier': self.request.REQUEST['oauth_verifier']})
+                at_url = at_url + '?' + urlencode(
+                    {'oauth_verifier': self.request.REQUEST['oauth_verifier']})
             response = requests.post(url=at_url, auth=oauth)
             if response.status_code != 200:
                 raise OAuthError(
-                    _('Invalid response while obtaining access token from "%s".') % get_token_prefix(self.request_token_url))
+                    _('Invalid response while obtaining access token '
+                      'from "%s".') % get_token_prefix(self.request_token_url))
             self.access_token = dict(parse_qsl(response.text))
 
-            self.request.session['oauth_%s_access_token' % get_token_prefix(self.request_token_url)] = self.access_token
+            self.request.session[
+                'oauth_%s_access_token' % get_token_prefix(
+                    self.request_token_url)] = self.access_token
         return self.access_token
 
     def _get_rt_from_session(self):
         """
-        Returns the request token cached in the session by ``_get_request_token``
+        Returns the request token cached
+        in the session by ``_get_request_token``
         """
         try:
-            return self.request.session['oauth_%s_request_token' % get_token_prefix(self.request_token_url)]
+            return self.request.session[
+                'oauth_%s_request_token' % get_token_prefix(
+                    self.request_token_url)]
         except KeyError:
-            raise OAuthError(_('No request token saved for "%s".') % get_token_prefix(self.request_token_url))
+            raise OAuthError(
+                _('No request token saved for "%s".') % get_token_prefix(
+                    self.request_token_url))
 
     def is_valid(self):
         try:
@@ -153,10 +169,13 @@ class OAuth(object):
         Get the saved access token for private resources from the session.
         """
         try:
-            return self.request.session['oauth_%s_access_token' % get_token_prefix(self.request_token_url)]
+            return self.request.session[
+                'oauth_%s_access_token' % get_token_prefix(
+                    self.request_token_url)]
         except KeyError:
             raise OAuthError(
-                _('No access token saved for "%s".') % get_token_prefix(self.request_token_url))
+                _('No access token saved for "%s".') % get_token_prefix(
+                    self.request_token_url))
 
     def query(self, url, method="GET", params=dict(), headers=dict()):
         """
@@ -175,6 +194,6 @@ class OAuth(object):
                                                      params=params)
         if response.status_code != 200:
             raise OAuthError(
-                _('No access to private resources at "%s".') % get_token_prefix(self.request_token_url))
-
+                _('No access to private resources at '
+                  '"%s".') % get_token_prefix(self.request_token_url))
         return response.text
