@@ -1,15 +1,24 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render_to_response, redirect
 from django.http import HttpResponseRedirect
+from django.views.generic.edit import CreateView
+
 import twitter
 
 from spam.settings import FACEBOOK_ID, FACEBOOK_SECRET
 from spam.settings import TWITTER_ID, TWITTER_SECRET
 from .client import OAuthClient
+from .forms import SignupForm
 
 FACEBOOK_AUTHORIZE_URL = 'https://www.facebook.com/dialog/oauth'
 FACEBOOK_ACCESS_TOKEN_URL = 'https://graph.facebook.com/oauth/access_token'
 FACEBOOK_EXPIRES_IN_KEY = 'expires'
+
+
+class SignupView(CreateView):
+    template_name = 'app1/signup.html'
+    form_class = SignupForm
+    success_url = '/app1/hello'
 
 
 class HelloView(TemplateView):

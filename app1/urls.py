@@ -10,4 +10,6 @@ urlpatterns = patterns(
     url(r'^facebook/callback$', v.callbackview),
     url(r'^twitter/login$', v.twitter_login),
     url(r'^twitter/callback$', v.twitter_callback),
+
+    url(r'^signup$', v.SignupView.as_view()),
 )
