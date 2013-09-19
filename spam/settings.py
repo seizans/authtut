@@ -84,6 +84,9 @@ INSTALLED_APPS = (
     'app1',
 )
 
+# For Auth
+AUTH_USER_MODEL = 'app1.MyUser'
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
