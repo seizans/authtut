@@ -1,7 +1,8 @@
+# coding=utf-8
 from django.views.generic import TemplateView
 from django.shortcuts import render_to_response, redirect
 from django.http import HttpResponseRedirect
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, ModelFormMixin
 
 import twitter
 
@@ -9,6 +10,7 @@ from spam.settings import FACEBOOK_ID, FACEBOOK_SECRET
 from spam.settings import TWITTER_ID, TWITTER_SECRET
 from .client import OAuthClient
 from .forms import SignupForm
+from .models import EmailConfirmation
 
 FACEBOOK_AUTHORIZE_URL = 'https://www.facebook.com/dialog/oauth'
 FACEBOOK_ACCESS_TOKEN_URL = 'https://graph.facebook.com/oauth/access_token'
@@ -19,6 +21,37 @@ class SignupView(CreateView):
     template_name = 'app1/signup.html'
     form_class = SignupForm
     success_url = '/app1/hello'
+
+    #TODO: form.saveからsend_confirmationまで1トランザクションにする
+    def form_valid(self, form):
+        self.object = form.save()
+        user = self.object
+        import hashlib
+        import random
+        bits = random.SystemRandom().getrandbits(512)
+        key = hashlib.sha256(str(bits)).hexdigest()
+        email_confirmation = EmailConfirmation(
+            user=user, email=user.email, key=key)
+        email_confirmation.send_confirmation(self.request)
+        return super(ModelFormMixin, self).form_valid(form)
+
+
+class ConfirmationView(TemplateView):
+    def get(self, *args, **kwargs):
+        key = kwargs['key']
+        if not key:
+            raise RuntimeError('URLパラメータに鍵が入ってない')
+        confirmation = EmailConfirmation.objects.get(key=key)
+        # TODO: confirmation が引けなかった場合の対応を書く
+        if confirmation.key_expired():
+            # TODO: URL期限切れの場合に対応する
+            raise RuntimeError('確認URLが期限切れ')
+        if confirmation.verified:
+            # TODO: 既に確認済みの場合に対応する
+            pass
+        confirmation.verified = True
+        confirmation.save()
+        return render_to_response('app1/hello.html')
 
 
 class HelloView(TemplateView):
