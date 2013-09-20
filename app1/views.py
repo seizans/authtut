@@ -53,27 +53,26 @@ class SignupView(CreateView):
         return super(ModelFormMixin, self).form_valid(form)
 
 
-class ConfirmationView(TemplateView):
-    def get(self, *args, **kwargs):
-        key = kwargs['key']
-        if not key:
-            raise RuntimeError('URLパラメータに鍵が入ってない')
-        try:
-            confirmation = EmailConfirmation.objects.get(key=key)
-        except EmailConfirmation.DoesNotExist as e:
-            logger.exception(e)
-            #TODO: 無効なURLですページへリダイレクトする
-            return redirect('/app1/hello')
-        if confirmation.key_expired():
-            logger.warning('確認URLが期限切れ')
-            # TODO: URL期限切れですページへリダイレクトする
-            return redirect('/app1/hello')
-        if confirmation.verified:
-            # TODO: 既に確認済みの場合に対応する
-            pass
-        confirmation.verified = True
-        confirmation.save()
-        return render_to_response('app1/hello.html')
+def confirmation(request, *args, **kwargs):
+    key = kwargs['key']
+    if not key:
+        raise RuntimeError('URLパラメータに鍵が入ってない')
+    try:
+        email_confirmation = EmailConfirmation.objects.get(key=key)
+    except EmailConfirmation.DoesNotExist as e:
+        logger.exception(e)
+        #TODO: 無効なURLですページへリダイレクトする
+        return redirect('/app1/hello')
+    if email_confirmation.key_expired():
+        logger.warning('確認URLが期限切れ')
+        # TODO: URL期限切れですページへリダイレクトする
+        return redirect('/app1/hello')
+    if email_confirmation.verified:
+        # TODO: 既に確認済みの場合に対応する
+        pass
+    email_confirmation.verified = True
+    email_confirmation.save()
+    return render_to_response('app1/hello.html')
 
 
 class HelloView(TemplateView):
