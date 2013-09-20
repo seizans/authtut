@@ -13,7 +13,5 @@ urlpatterns = patterns(
     url(r'^twitter/callback$', v.twitter_callback),
 
     url(r'^signup$', v.SignupView.as_view()),
-    # TODO: reverse()を使わないようにしてこのnameも消す
-    url(r'^confirmation/(?P<key>\w+)/$', v.ConfirmationView.as_view(),
-        name=u'confirmation'),
+    url(r'^confirmation/(?P<key>\w+)$', v.ConfirmationView.as_view()),
 )

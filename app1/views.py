@@ -2,7 +2,6 @@
 import logging
 
 from django.core.mail import send_mail
-from django.core.urlresolvers import reverse
 from django.views.generic import TemplateView
 from django.shortcuts import render_to_response, redirect
 from django.http import HttpResponseRedirect
@@ -32,9 +31,7 @@ class SignupView(CreateView):
     #TODO: form.saveからsend_confirmationまで1トランザクションにする
     def form_valid(self, form):
         def send_confirmation(request, email_confirmation):
-            # TODO: reverseを使わずに書く
-            activate_url = reverse(
-                'confirmation', args=[email_confirmation.key])
+            activate_url = '/app1/confirmation/' + email_confirmation.key
             activate_url = request.build_absolute_uri(activate_url)
             subject = '確認メールのタイトル'
             from_email = email_confirmation.email
