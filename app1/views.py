@@ -1,4 +1,6 @@
 # coding=utf-8
+import logging
+
 from django.views.generic import TemplateView
 from django.shortcuts import render_to_response, redirect
 from django.http import HttpResponseRedirect
@@ -15,6 +17,8 @@ from .models import EmailConfirmation
 FACEBOOK_AUTHORIZE_URL = 'https://www.facebook.com/dialog/oauth'
 FACEBOOK_ACCESS_TOKEN_URL = 'https://graph.facebook.com/oauth/access_token'
 FACEBOOK_EXPIRES_IN_KEY = 'expires'
+
+logger = logging.getLogger('debug')
 
 
 class SignupView(CreateView):
@@ -41,11 +45,16 @@ class ConfirmationView(TemplateView):
         key = kwargs['key']
         if not key:
             raise RuntimeError('URLパラメータに鍵が入ってない')
-        confirmation = EmailConfirmation.objects.get(key=key)
-        # TODO: confirmation が引けなかった場合の対応を書く
+        try:
+            confirmation = EmailConfirmation.objects.get(key=key)
+        except EmailConfirmation.DoesNotExist as e:
+            logger.exception(e)
+            #TODO: 無効なURLですページへリダイレクトする
+            return redirect('/app1/hello')
         if confirmation.key_expired():
-            # TODO: URL期限切れの場合に対応する
-            raise RuntimeError('確認URLが期限切れ')
+            logger.warning('確認URLが期限切れ')
+            # TODO: URL期限切れですページへリダイレクトする
+            return redirect('/app1/hello')
         if confirmation.verified:
             # TODO: 既に確認済みの場合に対応する
             pass
