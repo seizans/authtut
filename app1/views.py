@@ -1,10 +1,13 @@
 # coding=utf-8
 import logging
 
+from django.core.mail import send_mail
+from django.core.urlresolvers import reverse
 from django.views.generic import TemplateView
 from django.shortcuts import render_to_response, redirect
 from django.http import HttpResponseRedirect
 from django.views.generic.edit import CreateView, ModelFormMixin
+from django.utils import timezone
 
 import twitter
 
@@ -28,6 +31,19 @@ class SignupView(CreateView):
 
     #TODO: form.saveからsend_confirmationまで1トランザクションにする
     def form_valid(self, form):
+        def send_confirmation(request, email_confirmation):
+            # TODO: reverseを使わずに書く
+            activate_url = reverse(
+                'confirmation', args=[email_confirmation.key])
+            activate_url = request.build_absolute_uri(activate_url)
+            subject = '確認メールのタイトル'
+            from_email = email_confirmation.email
+            message = 'メール本文ここから\n\n' + activate_url + '\n\nここまで'
+            recipient_list = ['shimazaki@shiguredo.jp']
+            send_mail(subject, message, from_email, recipient_list)
+            email_confirmation.sent = timezone.now()
+            email_confirmation.save()
+
         self.object = form.save()
         user = self.object
         import hashlib
@@ -36,7 +52,7 @@ class SignupView(CreateView):
         key = hashlib.sha256(str(bits)).hexdigest()
         email_confirmation = EmailConfirmation(
             user=user, email=user.email, key=key)
-        email_confirmation.send_confirmation(self.request)
+        send_confirmation(self.request, email_confirmation)
         return super(ModelFormMixin, self).form_valid(form)
 
 
