@@ -1,1 +1,12 @@
 <h1>HELLO DJANGO</h1>
+
+<ul>
+    <li>TODO: if user ではなく AnonymousUser かどうかで判定する</li>
+</ul>
+
+{% if user %}
+<h2>{{ user.username }} さんこんにちはこんにちは</h2>
+<ul>
+    <li>Email: {{ user.email }}</li>
+</ul>
+{% endif %}

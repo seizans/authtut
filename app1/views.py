@@ -2,10 +2,11 @@
 import logging
 
 from django.core.mail import send_mail
+from django.contrib.auth import login
 from django.views.generic import TemplateView
 from django.shortcuts import render_to_response, redirect
 from django.http import HttpResponseRedirect
-from django.views.generic.edit import CreateView, ModelFormMixin
+from django.views.generic.edit import CreateView, FormView, ModelFormMixin
 from django.utils import timezone
 
 import twitter
@@ -13,7 +14,7 @@ import twitter
 from spam.settings import FACEBOOK_ID, FACEBOOK_SECRET
 from spam.settings import TWITTER_ID, TWITTER_SECRET
 from .client import OAuthClient
-from .forms import SignupForm
+from .forms import LoginForm, SignupForm
 from .models import EmailConfirmation
 
 FACEBOOK_AUTHORIZE_URL = 'https://www.facebook.com/dialog/oauth'
@@ -21,6 +22,16 @@ FACEBOOK_ACCESS_TOKEN_URL = 'https://graph.facebook.com/oauth/access_token'
 FACEBOOK_EXPIRES_IN_KEY = 'expires'
 
 logger = logging.getLogger('debug')
+
+
+class LoginView(FormView):
+    template_name = 'app1/login.html'
+    form_class = LoginForm
+    success_url = '/app1/hello'
+
+    def form_valid(self, form):
+        login(self.request, form.user)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class SignupView(CreateView):
@@ -50,6 +61,7 @@ class SignupView(CreateView):
         email_confirmation = EmailConfirmation(
             user=user, email=user.email, key=key)
         send_confirmation(self.request, email_confirmation)
+        # TODO: superはHttpResponseRedirectしてるだけなので使わないようにする
         return super(ModelFormMixin, self).form_valid(form)
 
 

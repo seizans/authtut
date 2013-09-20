@@ -14,4 +14,5 @@ urlpatterns = patterns(
 
     url(r'^signup$', v.SignupView.as_view()),
     url(r'^confirmation/(?P<key>\w+)$', v.confirmation),
+    url(r'^login$', v.LoginView.as_view()),
 )

@@ -2,7 +2,7 @@
 import datetime
 
 from django.utils import timezone
-from django.contrib.auth.models import AbstractBaseUser
+from django.contrib.auth.models import AbstractBaseUser, UserManager
 import django.db.models as m
 
 
@@ -12,6 +12,8 @@ class MyUser(AbstractBaseUser):
     is_adult = m.BooleanField(default=True)
     is_active = m.BooleanField(default=True)
     is_admin = m.BooleanField(default=False)
+
+    objects = UserManager()
     USERNAME_FIELD = 'username'
 
     def get_full_name(self):
@@ -40,5 +42,6 @@ class EmailConfirmation(m.Model):
     sent = m.DateTimeField(null=True)
 
     def key_expired(self):
+        # TODO: 有効期限1日というハードコーディングをやめる
         expiration_date = self.sent + datetime.timedelta(days=1)
         return expiration_date <= timezone.now()
