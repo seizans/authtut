@@ -1,3 +1,5 @@
 django
 django-debug-toolbar
 requests-oauthlib
+python-twitter
+facebook-sdk
