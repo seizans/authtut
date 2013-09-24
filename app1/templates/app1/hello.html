@@ -9,11 +9,16 @@
     <li><a href="/app1/login">ログイン画面</a></li>
     <li><a href="/app1/logout">ログアウトする</a></li>
     <li><a href="/app1/facebook/login">ログイン中のユーザにFacebookアカウントを関連付ける</a></li>
+    <li><a href="/app1/twitter/login">ログイン中のユーザにTwitterアカウントを関連付ける</a></li>
 </ul>
 
 {% if user %}
-<h2>{{ user.username }} さんこんにちはこんにちは</h2>
-<ul>
-    <li>Email: {{ user.email }}</li>
-</ul>
+    <h2>{{ user.username }} さんこんにちはこんにちは</h2>
+    <ul>
+        <li>Email: {{ user.email }}</li>
+    </ul>
+    <p>
+        Facebook: <img width="50" height="50" src="{{ user.get_fb_avatar_url }}" >
+        Twitter: <img width="50" height="50" src="{{ user.tw_profile_image_url }}" >
+    </p>
 {% endif %}

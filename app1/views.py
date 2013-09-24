@@ -94,8 +94,8 @@ def confirmation(request, *args, **kwargs):
     return render_to_response('app1/hello.html')
 
 
-class HelloView(TemplateView):
-    template_name = 'app1/hello.html'
+def hello(request):
+    return render_to_response('app1/hello.html')
 
 
 def loginview(request):
@@ -197,6 +197,10 @@ def twitter_login(request):
 
 
 def twitter_callback(request):
+    user = request.user
+    if user.is_anonymous():
+        print user
+        raise Exception('ログインしていません')
     callback_url = request.build_absolute_uri('/app1/twitter/callback')
     client = OAuthClient(request, TWITTER_ID, TWITTER_SECRET,
                          TWITTER_REQUEST_TOKEN_URL,
@@ -205,9 +209,25 @@ def twitter_callback(request):
                          parameters={})
     # TODO: if not client.is_valid():
     access_token = client.get_access_token()
-    print 'TOKEN: ', access_token['oauth_token_secret']
     token = access_token['oauth_token']
     secret = access_token['oauth_token_secret']
+    api = twitter.Api(
+        consumer_key=TWITTER_ID,
+        consumer_secret=TWITTER_SECRET,
+        access_token_key=token,
+        access_token_secret=secret
+    )
+    tw_user = api.GetUser(access_token['user_id'])
+    user.tw_token = token
+    user.tw_secret = secret
+    user.tw_name = tw_user.name
+    user.tw_screen_name = tw_user.screen_name
+    user.tw_profile_image_url = tw_user.profile_image_url
+    user.save()
+    return redirect('/app1/hello')
+
+
+def twitter_post(token, secret):
     api = twitter.Api(
         consumer_key=TWITTER_ID,
         consumer_secret=TWITTER_SECRET,
@@ -217,4 +237,3 @@ def twitter_callback(request):
     message = 'twitter post test'
     poststatus = api.PostUpdate(message)
     print 'POST STATUS: ', poststatus
-    return redirect('/app1/hello')
