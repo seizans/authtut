@@ -111,7 +111,20 @@ def callbackview(request):
     access_token = get_access_token(
         FACEBOOK_ID, request.build_absolute_uri('/app1/facebook/callback'),
         FACEBOOK_SECRET,  '', request.GET['code'])
-    return facepost(access_token['access_token'])
+    import facebook
+    graph = facebook.GraphAPI(access_token['access_token'])
+    profile = graph.get_object('me')
+    #for x, y in profile.iteritems():
+        #print x, y
+    user = request.user
+    if user.is_anonymous():
+        print user
+        raise Exception('ログインしていません')
+    user.fb_token = access_token['access_token']
+    user.fb_username = profile['username']
+    user.fb_name = profile['name']
+    user.save()
+    return redirect('/app1/hello')
 
 
 def facepost(token):

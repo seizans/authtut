@@ -9,6 +9,9 @@ import django.db.models as m
 class MyUser(AbstractBaseUser):
     username = m.CharField(max_length=40, unique=True, db_index=True)
     email = m.EmailField(max_length=255, unique=True, db_index=True)
+    fb_token = m.TextField()
+    fb_username = m.CharField(max_length=100, unique=True, null=True)
+    fb_name = m.CharField(max_length=100, null=True)
     is_adult = m.BooleanField(default=True)
     is_active = m.BooleanField(default=True)
     is_admin = m.BooleanField(default=False)
@@ -27,6 +30,10 @@ class MyUser(AbstractBaseUser):
 
     def has_perm(self, perm, obj=None):
         return True
+
+    def get_fb_avatar_url(self):
+        fb_avatar_url = 'http://graph.facebook.com/{0}/picture?type=large'
+        return fb_avatar_url.format(self.fb_username)
 
     @property
     def is_staff(self):
