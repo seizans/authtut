@@ -2,7 +2,7 @@
 import logging
 
 from django.core.mail import send_mail
-from django.contrib.auth import login
+from django.contrib import auth
 from django.views.generic import TemplateView
 from django.shortcuts import render_to_response, redirect
 from django.http import HttpResponseRedirect
@@ -24,13 +24,20 @@ FACEBOOK_EXPIRES_IN_KEY = 'expires'
 logger = logging.getLogger('debug')
 
 
+def logout(request):
+    # TODO: 「ログアウトしました」をadd_messageする
+    # TODO: nextでリダイレクト先を指定できるようにする
+    auth.logout(request)
+    return redirect('/app1/hello')
+
+
 class LoginView(FormView):
     template_name = 'app1/login.html'
     form_class = LoginForm
     success_url = '/app1/hello'
 
     def form_valid(self, form):
-        login(self.request, form.user)
+        auth.login(self.request, form.user)
         return HttpResponseRedirect(self.get_success_url())
 
 
