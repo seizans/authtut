@@ -3,10 +3,8 @@ import logging
 
 from django.core.mail import send_mail
 from django.contrib import auth
-from django.views.generic import TemplateView
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render, render_to_response, redirect
 from django.http import HttpResponseRedirect
-from django.template import RequestContext
 from django.views.generic.edit import CreateView, FormView, ModelFormMixin
 from django.utils import timezone
 
@@ -96,8 +94,7 @@ def confirmation(request, *args, **kwargs):
 
 
 def hello(request):
-    return render_to_response(
-        'app1/hello.html', context_instance=RequestContext(request))
+    return render(request, 'app1/hello.html')
 
 
 def loginview(request):
