@@ -1,4 +1,5 @@
 # coding=utf-8
+from datetime import datetime
 import logging
 
 from django.core.mail import send_mail
@@ -122,6 +123,7 @@ def callbackview(request):
     user.fb_token = access_token['access_token']
     user.fb_username = profile['username']
     user.fb_name = profile['name']
+    user.fb_updated = datetime.now()
     user.save()
     return redirect('/app1/hello')
 
@@ -222,6 +224,7 @@ def twitter_callback(request):
     user.tw_name = tw_user.name
     user.tw_screen_name = tw_user.screen_name
     user.tw_profile_image_url = tw_user.profile_image_url
+    user.tw_updated = datetime.now()
     user.save()
     return redirect('/app1/hello')
 
