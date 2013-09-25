@@ -194,6 +194,8 @@ TWITTER_AUTHORIZE_URL = 'https://api.twitter.com/oauth/authenticate'
 
 
 def twitter_login(request):
+    # TODO: GETにnextパラメータが無い場合の処理
+    request.session['next'] = request.GET['next']
     callback_url = request.build_absolute_uri('/app1/twitter/callback')
     #action = request.GET.get('action', 'authenticate')
     client = OAuthClient(request, TWITTER_ID, TWITTER_SECRET,
@@ -233,7 +235,8 @@ def twitter_callback(request):
     user.tw_profile_image_url = tw_user.profile_image_url
     user.tw_updated = datetime.now()
     user.save()
-    return redirect('/app1/hello')
+    next = request.session.pop('next')
+    return redirect(next)
 
 
 def twitter_post(token, secret):

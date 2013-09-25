@@ -5,7 +5,7 @@
     <li><a href="/app1/login?next={{ request.path }}">ログイン画面</a></li>
     <li><a href="/app1/logout?next={{ request.path }}">ログアウトする</a></li>
     <li><a href="/app1/facebook/login?next={{ request.path }}">ログイン中のユーザにFacebookアカウントを関連付ける</a></li>
-    <li><a href="/app1/twitter/login">ログイン中のユーザにTwitterアカウントを関連付ける</a></li>
+    <li><a href="/app1/twitter/login?next={{ request.path }}">ログイン中のユーザにTwitterアカウントを関連付ける</a></li>
 </ul>
 
 {% if user %}
