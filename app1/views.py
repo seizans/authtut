@@ -6,7 +6,7 @@ from django.core.mail import send_mail
 from django.contrib import auth
 from django.shortcuts import render, render_to_response, redirect
 from django.http import HttpResponseRedirect
-from django.views.generic.edit import CreateView, FormView, ModelFormMixin
+from django.views.generic.edit import CreateView, FormView
 from django.utils import timezone
 
 import twitter
@@ -70,8 +70,7 @@ class SignupView(CreateView):
         email_confirmation = EmailConfirmation(
             user=user, email=user.email, key=key)
         send_confirmation(self.request, email_confirmation)
-        # TODO: superはHttpResponseRedirectしてるだけなので使わないようにする
-        return super(ModelFormMixin, self).form_valid(form)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 def confirmation(request, *args, **kwargs):
