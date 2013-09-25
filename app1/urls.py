@@ -8,8 +8,8 @@ urlpatterns = patterns(
     '',
     url(r'^hello$', v.hello),
     url(r'^hello2$', v.hello),
-    url(r'^facebook/login$', v.loginview),
-    url(r'^facebook/callback$', v.callbackview),
+    url(r'^facebook/login$', v.facebook_login),
+    url(r'^facebook/callback$', v.facebook_callback),
     url(r'^twitter/login$', v.twitter_login),
     url(r'^twitter/callback$', v.twitter_callback),
 

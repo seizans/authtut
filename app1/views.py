@@ -100,7 +100,7 @@ def hello(request):
     return render(request, 'app1/hello.html')
 
 
-def loginview(request):
+def facebook_login(request):
     redirect_url = get_redirect_url(
         FACEBOOK_AUTHORIZE_URL, '', FACEBOOK_ID,
         request.build_absolute_uri('/app1/facebook/callback'),
@@ -109,7 +109,7 @@ def loginview(request):
     return HttpResponseRedirect(redirect_url)
 
 
-def callbackview(request):
+def facebook_callback(request):
     access_token = get_access_token(
         FACEBOOK_ID, request.build_absolute_uri('/app1/facebook/callback'),
         FACEBOOK_SECRET,  '', request.GET['code'])
