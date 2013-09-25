@@ -100,17 +100,21 @@ def hello(request):
 
 
 def facebook_login(request):
+    # TODO: next が無かった場合の処理
+    request.session['next'] = request.GET['next']
+    callback_url = request.build_absolute_uri('/app1/facebook/callback')
     redirect_url = get_redirect_url(
-        FACEBOOK_AUTHORIZE_URL, '', FACEBOOK_ID,
-        request.build_absolute_uri('/app1/facebook/callback'),
-        '',
+        FACEBOOK_AUTHORIZE_URL, FACEBOOK_ID,
+        callback_url,
+        '', '',
     )
     return HttpResponseRedirect(redirect_url)
 
 
 def facebook_callback(request):
+    callback_url = request.build_absolute_uri('/app1/facebook/callback')
     access_token = get_access_token(
-        FACEBOOK_ID, request.build_absolute_uri('/app1/facebook/callback'),
+        FACEBOOK_ID, callback_url,
         FACEBOOK_SECRET,  '', request.GET['code'])
     import facebook
     graph = facebook.GraphAPI(access_token['access_token'])
@@ -126,7 +130,9 @@ def facebook_callback(request):
     user.fb_name = profile['name']
     user.fb_updated = datetime.now()
     user.save()
-    return redirect('/app1/hello')
+    # TODO: next が無かった場合の処理
+    next = request.session.pop('next')
+    return redirect(next)
 
 
 def facepost(token):
@@ -146,8 +152,8 @@ except ImportError:
 import requests
 
 
-def get_redirect_url(authorization_url, extra_params, client_id, redirect_url,
-                     scope):
+def get_redirect_url(authorization_url, client_id, redirect_url,
+                     scope, extra_params):
     params = {
         'client_id': client_id,
         'redirect_uri': redirect_url,
