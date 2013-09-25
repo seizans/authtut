@@ -1,6 +1,7 @@
 <h1>My Login Form</h1>
 <form method="post" action="">
     {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.path }}" />
     {{ form.as_p }}
     <input type="submit">
 </form>

@@ -26,9 +26,9 @@ logger = logging.getLogger('debug')
 
 def logout(request):
     # TODO: 「ログアウトしました」をadd_messageする
-    # TODO: nextでリダイレクト先を指定できるようにする
     auth.logout(request)
-    return redirect('/app1/hello')
+    # TODO: nextパラメータが無かった場合にトップにリダイレクトする
+    return redirect(request.GET['next'])
 
 
 class LoginView(FormView):
@@ -37,6 +37,8 @@ class LoginView(FormView):
     success_url = '/app1/hello'
 
     def form_valid(self, form):
+        if self.request.GET['next']:
+            self.success_url = self.request.GET['next']
         auth.login(self.request, form.user)
         return HttpResponseRedirect(self.get_success_url())
 

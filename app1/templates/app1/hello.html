@@ -6,11 +6,12 @@
 
 <ul>
     <li><a href="/app1/signup">サインアップ画面</a></li>
-    <li><a href="/app1/login">ログイン画面</a></li>
-    <li><a href="/app1/logout">ログアウトする</a></li>
+    <li><a href="/app1/login?next={{ request.path }}">ログイン画面</a></li>
+    <li><a href="/app1/logout?next={{ request.path }}">ログアウトする</a></li>
     <li><a href="/app1/facebook/login">ログイン中のユーザにFacebookアカウントを関連付ける</a></li>
     <li><a href="/app1/twitter/login">ログイン中のユーザにTwitterアカウントを関連付ける</a></li>
 </ul>
+{{ request.path }}hoghoge
 
 {% if user %}
     <h2>{{ user.username }} さんこんにちはこんにちは</h2>
